@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'upstream'
+
+if !ARGV[0]
+  puts "You must specify a path to a git repository. To setup the current directory, \
+    run `upstream .`"
+elsif !ARGV[1].start_with?('/')
+  puts "Please specify an absolute path."
+else
+  repo_path = Upstream::PathFinder.get_path(ARGV[0])
+  if Upstream::PathChecker.has_upstream?(repo_path)
+    Upstream::Tracker.run(repo_path)
+  else
+    puts "Please add an upstream remote to this repository."
+  end
+end
