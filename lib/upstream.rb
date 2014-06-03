@@ -60,6 +60,7 @@ module Upstream
 
     def initialize(path)
       @path = path
+      @already_existed = schedule_exists?
     end
 
     def run
@@ -73,11 +74,25 @@ module Upstream
       `cd #{path} && wheneverize .`
     end
 
+    def schedule_exists?
+      File.exist?("#{path}/config/schedule.rb")
+    end
+
+    def already_existed?
+      @already_existed
+    end
+
     def write_schedule
-      File.open('config/schedule.rb', 'w+') do |f|
-        f.write <<-COMMAND.strip_heredoc.chomp
+      if !schedule_exists?
+        write_args = ['config/schedule.rb', 'w+']
+      else
+        write_args = ['config/schedule.rb', 'a']
+      end
+
+      File.open(*write_args) do |f|
+        f.puts <<-COMMAND.gsub(/^ {10}/, '')
           every 1.minute do
-            command "cd #{path} && git fetch upstream master"
+            command "eval $(ssh-agent) && ssh-add ~./ssh/id_rsa.pub && cd #{path} && git fetch upstream master"
           end
         COMMAND
       end
@@ -88,12 +103,14 @@ module Upstream
     end
 
     def clean_up
-      file_count = `ls config -a | wc -l`.strip
+      file_count = `ls -a config | wc -l`.strip.to_i
 
-      if file_count > 3
-        `rm config/schedule.rb`
-      else
-        `rm -rf config`
+      if !already_existed?
+        if file_count > 3
+          `rm config/schedule.rb`
+        else
+          `rm -rf config`
+        end
       end
     end
   end
