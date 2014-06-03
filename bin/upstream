@@ -3,9 +3,8 @@
 require 'upstream'
 
 if !ARGV[0]
-  puts "You must specify a path to a git repository. To setup the current directory, \
-    run `upstream .`"
-elsif !ARGV[1].start_with?('/')
+  puts "You must specify a path to a git repository. To setup the current directory, run `upstream .`"
+elsif ARGV[0] != '.' && !ARGV[0].start_with?('/')
   puts "Please specify an absolute path."
 else
   repo_path = Upstream::PathFinder.get_path(ARGV[0])
