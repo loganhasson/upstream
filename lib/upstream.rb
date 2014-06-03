@@ -76,7 +76,7 @@ module Upstream
     def write_schedule
       File.open('config/schedule.rb', 'w+') do |f|
         f.write <<-COMMAND.stripheredoc.chomp
-          every 1.hour do
+          every 1.minute do
             command "cd #{path} && git fetch upstream master"
           end
         COMMAND
