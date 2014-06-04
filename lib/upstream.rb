@@ -10,8 +10,8 @@ module Upstream
       @pull = pull
     end
 
-    def self.run(path)
-      new(path).setup
+    def self.run(path, pull)
+      new(path, pull).setup
     end
 
     def setup
