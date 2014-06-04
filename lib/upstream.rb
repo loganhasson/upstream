@@ -71,7 +71,13 @@ module Upstream
     end
 
     def setup
-      `cd #{path} && wheneverize .`
+      if !already_existed?
+        if !File.exist?("#{path}/config")
+          `cd #{path} && mkdir config && wheneverize .`
+        else
+          `cd #{path} && wheneverize .`
+        end
+      end
     end
 
     def schedule_exists?
@@ -92,7 +98,7 @@ module Upstream
       File.open(*write_args) do |f|
         f.puts <<-COMMAND.gsub(/^ {10}/, '')
           every 1.minute do
-            command "eval $(ssh-agent) && ssh-add ~./ssh/id_rsa.pub && cd #{path} && git fetch upstream master"
+            command "eval $(ssh-agent) && ssh-add ~/.ssh/id_rsa && cd #{path} && git fetch upstream master"
           end
         COMMAND
       end
