@@ -1,15 +1,26 @@
 #!/usr/bin/env ruby
 
 require 'upstream'
+require 'optparse'
+
+pull = false
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: upstream . [options]"
+
+  opts.on("-p", "--pull", "Automatically pull instead of fetch from upstream") do |p|
+    pull = true
+  end
+end.parse!
 
 if !ARGV[0]
-  puts "You must specify a path to a git repository. To setup the current directory, run `upstream .`"
+  puts `upstream --help`
 elsif ARGV[0] != '.' && !ARGV[0].start_with?('/')
   puts "Please specify an absolute path."
 else
   repo_path = Upstream::PathFinder.get_path(ARGV[0])
   if Upstream::PathChecker.has_upstream?(repo_path)
-    Upstream::Tracker.run(repo_path)
+    Upstream::Tracker.run(repo_path, pull)
   else
     puts "Please add an upstream remote to this repository."
   end

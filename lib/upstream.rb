@@ -3,10 +3,11 @@ require "upstream/version"
 module Upstream
 
   class Tracker
-    attr_reader :path
+    attr_reader :path, :pull
 
-    def initialize(path)
+    def initialize(path, pull=false)
       @path = path
+      @pull = pull
     end
 
     def self.run(path)
@@ -14,7 +15,7 @@ module Upstream
     end
 
     def setup
-      wheneverizer = Wheneverizer.new(path)
+      wheneverizer = Wheneverizer.new(path, pull)
       wheneverizer.run
     end
   end
@@ -56,11 +57,12 @@ module Upstream
   end
 
   class Wheneverizer
-    attr_reader :path
+    attr_reader :path, :pull
 
-    def initialize(path)
+    def initialize(path, pull=false)
       @path = path
       @already_existed = schedule_exists?
+      @pull = pull
     end
 
     def run
@@ -95,10 +97,12 @@ module Upstream
         write_args = ['config/schedule.rb', 'a']
       end
 
+      fetch_or_pull = pull ? "pull" : "fetch"
+
       File.open(*write_args) do |f|
         f.puts <<-COMMAND.gsub(/^ {10}/, '')
           every 1.minute do
-            command "eval $(ssh-agent) && ssh-add ~/.ssh/github_id_rsa && cd #{path} && git fetch upstream master"
+            command "eval $(ssh-agent) && ssh-add ~/.ssh/github_id_rsa && cd #{path} && git #{fetch_or_pull} upstream master"
           end
         COMMAND
       end
