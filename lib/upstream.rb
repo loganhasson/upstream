@@ -101,7 +101,7 @@ module Upstream
 
       File.open(*write_args) do |f|
         f.puts <<-COMMAND.gsub(/^ {10}/, '')
-          every 1.minute do
+          every 1.hour do
             command "eval $(ssh-agent) && ssh-add ~/.ssh/github_id_rsa && cd #{path} && git #{fetch_or_pull} upstream master"
           end
         COMMAND
